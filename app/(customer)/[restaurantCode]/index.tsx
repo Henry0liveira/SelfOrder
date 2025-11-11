@@ -9,6 +9,8 @@ import { useCollectionQuery } from '@/hooks/useCollection';
 import { useCollection } from '@/hooks/useCollection';
 import type { Restaurant, MenuItem } from '@/types';
 import { Feather } from '@expo/vector-icons';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/services/firebase/config';
 
 // --- Constantes de Estilo ---
 const PRIMARY_ORANGE = '#ff8c42';
@@ -74,6 +76,11 @@ export default function MenuPage() {
     return acc;
   }, {} as Record<string, MenuItem[]>);
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.replace('/');
+  };
+
   return (
     <SafeAreaView style={styles.menuScreenContainer}>
       
@@ -83,10 +90,19 @@ export default function MenuPage() {
           <Feather name="anchor" size={20} color={PRIMARY_ORANGE} />
           <Text style={styles.restaurantNameText}>{restaurant.name}</Text>
         </View>
-        <TouchableOpacity style={styles.userButton}>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.userButton}>
             <Feather name="user" size={20} color={TEXT_COLOR_DARK} />
             <Text style={styles.userNameText}>{user?.displayName?.split(' ')[0] || 'Cliente'}</Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Feather name="log-out" size={18} color={TEXT_COLOR_DARK} />
+            <Text style={styles.logoutText}>Sair</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Conteúdo Principal (Scroll Vertical) */}
@@ -209,12 +225,28 @@ const styles = StyleSheet.create({
     color: PRIMARY_ORANGE,
     marginLeft: 5,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   userButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   userNameText: {
     fontSize: 16,
+    color: TEXT_COLOR_DARK,
+    marginLeft: 5,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 15,
+  },
+  logoutText: {
+    fontSize: 14,
     color: TEXT_COLOR_DARK,
     marginLeft: 5,
   },

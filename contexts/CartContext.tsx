@@ -53,16 +53,24 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         transaction.update(itemDocRef, { quantity: existingItem.quantity + 1 });
       } else {
         const newDocRef = doc(cartRef);
-        transaction.set(newDocRef, {
+        const cartItemData: any = {
           menuItemId: item.id,
           name: item.name,
           price: item.price,
           quantity: 1,
           imageUrl: item.imageUrl,
-          description: item.description,
-          category: item.category,
-          imageHint: item.imageHint,
-        });
+        };
+        // Only include optional fields if they exist and are not undefined
+        if (item.description !== undefined) {
+          cartItemData.description = item.description;
+        }
+        if (item.category !== undefined) {
+          cartItemData.category = item.category;
+        }
+        if (item.imageHint !== undefined) {
+          cartItemData.imageHint = item.imageHint;
+        }
+        transaction.set(newDocRef, cartItemData);
       }
     });
   };

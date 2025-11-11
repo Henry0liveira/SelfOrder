@@ -6,6 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCollectionQuery } from '@/hooks/useCollection';
 import type { Restaurant, Order } from '@/types';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/services/firebase/config';
 
 // --- Constantes de Estilo Comuns ---
 const PRIMARY_ORANGE = '#ff8c42';
@@ -68,6 +70,11 @@ export default function OrdersPage() {
     b.timestamp?.toMillis() - a.timestamp?.toMillis()
   );
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.replace('/');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header Fixo */}
@@ -76,6 +83,13 @@ export default function OrdersPage() {
           <Text style={styles.backButtonText}>← Voltar</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Meus Pedidos</Text>
+        <TouchableOpacity 
+          onPress={handleLogout} 
+          style={styles.logoutButton}
+        >
+          <Feather name="log-out" size={18} color={CARD_BACKGROUND} />
+          <Text style={styles.logoutText}>Sair</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Estado de Pedidos Vazios */}
@@ -175,16 +189,30 @@ const styles = StyleSheet.create({
         backgroundColor: PRIMARY_ORANGE,
         padding: 16,
         paddingTop: Platform.OS === 'ios' ? 50 : 20, // Ajuste para SafeArea
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     backButtonText: {
         color: CARD_BACKGROUND,
         fontSize: 16,
-        marginBottom: 8,
     },
     headerTitle: {
         color: CARD_BACKGROUND,
         fontSize: 24,
         fontWeight: 'bold',
+        flex: 1,
+        textAlign: 'center',
+    },
+    logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 5,
+    },
+    logoutText: {
+        color: CARD_BACKGROUND,
+        fontSize: 14,
+        marginLeft: 5,
     },
 
     // --- Empty State ---

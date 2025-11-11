@@ -22,6 +22,7 @@ export default function StaffMenu() {
   const router = useRouter();
   const { user } = useAuth();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [newItem, setNewItem] = useState({
     name: '',
     category: '',
@@ -57,15 +58,59 @@ export default function StaffMenu() {
       const itemId = Date.now().toString();
       await setDoc(doc(firestore, `restaurants/${user.uid}/menu/${itemId}`), {
         id: itemId,
-        ...newItem,
+        name: newItem.name,
+        category: newItem.category,
+        description: newItem.description,
         price: parseFloat(newItem.price),
+        imageUrl: newItem.imageUrl,
+        imageHint: '', // Default empty string for imageHint
         createdAt: new Date(),
       });
       setIsModalVisible(false);
       setNewItem({ name: '', category: '', description: '', price: '', imageUrl: '' });
+      setEditingItem(null);
     } catch (error) {
       console.error('Error adding menu item:', error);
     }
+  };
+
+  const handleEditItem = (item: MenuItem) => {
+    setEditingItem(item);
+    setNewItem({
+      name: item.name,
+      category: item.category,
+      description: item.description,
+      price: item.price.toString(),
+      imageUrl: item.imageUrl,
+    });
+    setIsModalVisible(true);
+  };
+
+  const updateMenuItem = async () => {
+    if (!user || !editingItem) return;
+    
+    try {
+      await setDoc(doc(firestore, `restaurants/${user.uid}/menu/${editingItem.id}`), {
+        id: editingItem.id,
+        name: newItem.name,
+        category: newItem.category,
+        description: newItem.description,
+        price: parseFloat(newItem.price),
+        imageUrl: newItem.imageUrl,
+        imageHint: editingItem.imageHint || '',
+      });
+      setIsModalVisible(false);
+      setNewItem({ name: '', category: '', description: '', price: '', imageUrl: '' });
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setNewItem({ name: '', category: '', description: '', price: '', imageUrl: '' });
+    setEditingItem(null);
   };
 
   return (
@@ -87,7 +132,11 @@ export default function StaffMenu() {
       <View style={styles.actionContainer}>
         <TouchableOpacity 
           style={styles.addButton}
-          onPress={() => setIsModalVisible(true)}
+          onPress={() => {
+            setEditingItem(null);
+            setNewItem({ name: '', category: '', description: '', price: '', imageUrl: '' });
+            setIsModalVisible(true);
+          }}
         >
           <Feather name="plus-circle" size={20} color={WHITE} />
           <Text style={styles.addButtonText}>Adicionar Novo Item</Text>
@@ -123,7 +172,10 @@ export default function StaffMenu() {
                       R$ {item.price.toFixed(2)}
                     </Text>
                   </View>
-                  <TouchableOpacity style={styles.editButton}>
+                  <TouchableOpacity 
+                    style={styles.editButton}
+                    onPress={() => handleEditItem(item)}
+                  >
                     <Feather name="edit-2" size={20} color={PRIMARY_COLOR} />
                   </TouchableOpacity>
                 </View>
@@ -140,8 +192,12 @@ export default function StaffMenu() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Adicionar Novo Item ao Cardápio</Text>
-            <Text style={styles.modalSubtitle}>Preencha os detalhes do novo item.</Text>
+            <Text style={styles.modalTitle}>
+              {editingItem ? 'Editar Item do Cardápio' : 'Adicionar Novo Item ao Cardápio'}
+            </Text>
+            <Text style={styles.modalSubtitle}>
+              {editingItem ? 'Atualize os detalhes do item.' : 'Preencha os detalhes do novo item.'}
+            </Text>
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Nome do Item</Text>
@@ -201,15 +257,17 @@ export default function StaffMenu() {
             <View style={styles.modalActions}>
               <TouchableOpacity 
                 style={styles.cancelButton} 
-                onPress={() => setIsModalVisible(false)}
+                onPress={handleCloseModal}
               >
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.submitButton}
-                onPress={addMenuItem}
+                onPress={editingItem ? updateMenuItem : addMenuItem}
               >
-                <Text style={styles.submitButtonText}>Adicionar Item</Text>
+                <Text style={styles.submitButtonText}>
+                  {editingItem ? 'Salvar Alterações' : 'Adicionar Item'}
+                </Text>
                 <Feather name="arrow-right" size={20} color={WHITE} style={styles.submitButtonIcon} />
               </TouchableOpacity>
             </View>

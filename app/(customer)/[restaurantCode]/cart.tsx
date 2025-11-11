@@ -10,6 +10,8 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/services/firebase/config';
 import type { Restaurant, Order } from '@/types';
 import { Feather } from '@expo/vector-icons';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/services/firebase/config';
 
 // --- Constantes de Estilo Comuns ---
 const PRIMARY_ORANGE = '#ff8c42';
@@ -40,6 +42,11 @@ export default function CartPage() {
     { field: 'code', operator: '==', value: restaurantCode }
   );
   const restaurant = restaurants?.[0];
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.replace('/');
+  };
 
   const handlePlaceOrder = async () => {
     if (!user || !restaurant || cartItems.length === 0 || isPlacingOrder) return;
@@ -86,7 +93,13 @@ export default function CartPage() {
           <Feather name="arrow-left" size={24} color={TEXT_COLOR_DARK} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Seu Pedido</Text>
-        <View style={{width: 30}} /> {/* Espaçador */}
+        <TouchableOpacity 
+          onPress={handleLogout} 
+          style={styles.logoutButton}
+        >
+          <Feather name="log-out" size={18} color={TEXT_COLOR_DARK} />
+          <Text style={styles.logoutText}>Sair</Text>
+        </TouchableOpacity>
       </View>
 
       {cartItems.length === 0 ? (
@@ -192,6 +205,18 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: TEXT_COLOR_DARK,
+        flex: 1,
+        textAlign: 'center',
+    },
+    logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 5,
+    },
+    logoutText: {
+        fontSize: 14,
+        color: TEXT_COLOR_DARK,
+        marginLeft: 5,
     },
 
     // --- Empty Cart State ---
