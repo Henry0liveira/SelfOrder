@@ -135,8 +135,16 @@ export default function MenuPage() {
                           resizeMode="cover"
                         />
                         <View style={styles.itemDetails}>
-                          <Text style={styles.itemNameText}>{item.name}</Text>
-                          <Text style={styles.itemDescriptionText}>{item.description}</Text>
+                          <View style={styles.itemHeader}>
+                            <Text style={styles.itemNameText}>{item.name}</Text>
+                            <Text 
+                              style={styles.itemDescriptionText}
+                              numberOfLines={3}
+                              ellipsizeMode="tail"
+                            >
+                              {item.description}
+                            </Text>
+                          </View>
                           
                           <View style={styles.itemFooter}>
                             <Text style={styles.itemPriceText}>
@@ -310,21 +318,27 @@ const styles = StyleSheet.create({
     flex: 1, 
     justifyContent: 'space-between',
   },
+  itemHeader: {
+    flex: 1,
+    flexShrink: 1,
+    minHeight: 0,
+  },
   itemNameText: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   itemDescriptionText: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 10,
+    flexShrink: 1,
   },
   itemFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 5,
+    marginTop: 8,
+    flexShrink: 0,
   },
   itemPriceText: {
     fontSize: 18,
